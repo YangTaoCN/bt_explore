@@ -12,7 +12,7 @@ import backtrader as bt
 # Create a Stratey
 class TestStrategy(bt.Strategy):
     params = (
-        ('maperiod', 20),
+        ('maperiod', 23),
     )
 
     REST_DAYS = 0
@@ -123,7 +123,7 @@ class TestStrategy(bt.Strategy):
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
-                self.order = self.sell(None, self.AMOUNT_ON_HAND)
+                self.order = self.close()
                 self.LAST_SELL = self.datas[0].datetime.date(0)
 
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
     modpath = os.path.dirname(os.path.abspath(sys.argv[0]))
-    datapath = os.path.join(modpath, '../../datas/orcl-1995-2014.txt')
+    datapath = os.path.join(modpath, '../../data/orcl-1995-2014.txt')
 
     # Create a Data Feed
     data = bt.feeds.YahooFinanceCSVData(
@@ -151,6 +151,7 @@ if __name__ == '__main__':
 
     # Add the Data Feed to Cerebro
     cerebro.adddata(data)
+
 
     # Set our desired cash start
     cerebro.broker.setcash(1000.0)
