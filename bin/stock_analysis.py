@@ -5,7 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 import datetime  # For datetime objects
 import os.path  # To manage paths
 import sys  # To find out the script name (in argv[0])
-sys.path.append(r'../strategies')
+sys.path.append('strategies')
 from sma_optimized import SMAOp
 
 # Import the backtrader platform
@@ -20,7 +20,7 @@ def stock_analysis(stock):
 
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
-    datapath = os.path.join('../data/' + stock + '.csv')
+    datapath = os.path.join('data/' + stock + '.csv')
 
     # Create a Data Feed
     data = bt.feeds.YahooFinanceCSVData(

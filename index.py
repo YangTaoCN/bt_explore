@@ -1,8 +1,8 @@
 import sys
-sys.path.append(r'../lib')
-sys.path.append(r'../bin')
+sys.path.append('lib')
 import csv
 import yahoo_import
+sys.path.append('bin')
 import stock_analysis
 
 # read stock list
@@ -19,7 +19,7 @@ def read_csv(file):
 # run every stratagy on every stock, keep the best stratagy, position, trade in stock status file
 
 def index():
-    list = read_csv('../stocks/list.csv')
+    list = read_csv('stocks/list.csv')
     for stock in list:
         yahoo_import.pull_day(stock)
 
