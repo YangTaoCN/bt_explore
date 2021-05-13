@@ -116,13 +116,13 @@ class SMAOp(bt.Strategy):
                             self.order = self.buy(None, max_buy)
                             self.LAST_BUY = self.datas[0].datetime.date(0)
         else:
-
             if self.dataclose[0] < self.sma[0]:
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.close()
+                self.AMOUNT_ON_HAND = 0
                 self.LAST_SELL = self.datas[0].datetime.date(0)
 
 THIS_STRA = SMAOp
@@ -152,7 +152,7 @@ def stock_analysis(stock, from_date, to_date):
     cerebro.adddata(data)
 
     # Set our desired cash start
-    cerebro.broker.setcash(1000)
+    cerebro.broker.setcash(100000)
 
     # Add a FixedSize sizer according to the stake
     cerebro.addsizer(bt.sizers.FixedSize, stake=10)
