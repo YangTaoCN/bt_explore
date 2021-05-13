@@ -86,19 +86,49 @@ class SMAOp(bt.Strategy):
                  (trade.pnl, trade.pnlcomm))
 
     def next(self):
+        cerebro = bt.Cerebro()
         # Simply log the closing price of the series from the reference
         self.log('Close, %.2f' % self.dataclose[0])
 
         # Check if an order is pending ... if yes, we cannot send a 2nd one
         if self.order:
-
+            return
 
         # Check if we are in the market
+        if not self.position:
 
+            # Not yet ... we MIGHT BUY if ...
+            if self.dataclose[-2] > self.sma[-2]:
+                if self.dataclose[-1] > self.sma[-1]:
+                    if self.dataclose[0] > self.sma[0]:
+                        if self.LAST_SELL:
+                            rest_day = self.datas[0].datetime.date(0) - self.LAST_SELL
+                        else:
+                            rest_day = 0
+
+                        if not self.LAST_BUY or\
+                            (self.LAST_SELL and self.LAST_BUY and rest_day > self.LAST_SELL - self.LAST_BUY):
+                            # BUY, BUY, BUY!!! (with all possible default parameters)
+                            self.log('BUY CREATE, %.2f' % self.dataclose[0])
+                            # Keep track of the created order to avoid a 2nd order
+                            p = cerebro.broker.getvalue()
+                            max_buy = p // self.dataclose[0]
+                            self.AMOUNT_ON_HAND = max_buy
+                            self.order = self.buy(None, max_buy)
+                            self.LAST_BUY = self.datas[0].datetime.date(0)
+        else:
+
+            if self.dataclose[0] < self.sma[0]:
+                # SELL, SELL, SELL!!! (with all possible default parameters)
+                self.log('SELL CREATE, %.2f' % self.dataclose[0])
+
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.close()
+                self.LAST_SELL = self.datas[0].datetime.date(0)
 
 THIS_STRA = SMAOp
 
-def stock_analysis(stock, from_date, to_date):
+def stock_analysis(stock):
     global cerebro
     # Create a cerebro entity
     cerebro = bt.Cerebro()
@@ -109,13 +139,14 @@ def stock_analysis(stock, from_date, to_date):
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
     datapath = os.path.join('data/' + stock + '.csv')
+    print(datetime.datetime(2020, 1, 1))
     # Create a Data Feed
     data = bt.feeds.YahooFinanceCSVData(
         dataname=datapath,
         # Do not pass values before this date
-        fromdate=from_date,
+        fromdate=datetime.datetime(2020, 1, 1),
         # Do not pass values before this date
-        todate=to_date,
+        todate=datetime.datetime(2020, 12, 31),
         # Do not pass values after this date
         reverse=False)
 
@@ -123,7 +154,7 @@ def stock_analysis(stock, from_date, to_date):
     cerebro.adddata(data)
 
     # Set our desired cash start
-    cerebro.broker.setcash(1000)
+    cerebro.broker.setcash(1000.0)
 
     # Add a FixedSize sizer according to the stake
     cerebro.addsizer(bt.sizers.FixedSize, stake=10)
@@ -142,4 +173,3 @@ def stock_analysis(stock, from_date, to_date):
 
     # Plot the result
     cerebro.plot()
-
