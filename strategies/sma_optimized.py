@@ -91,10 +91,39 @@ class SMAOp(bt.Strategy):
 
         # Check if an order is pending ... if yes, we cannot send a 2nd one
         if self.order:
-
+            return
 
         # Check if we are in the market
+        if not self.position:
 
+            # Not yet ... we MIGHT BUY if ...
+            if self.dataclose[-2] > self.sma[-2]:
+                if self.dataclose[-1] > self.sma[-1]:
+                    if self.dataclose[0] > self.sma[0]:
+                        if self.LAST_SELL:
+                            rest_day = self.datas[0].datetime.date(0) - self.LAST_SELL
+                        else:
+                            rest_day = 0
+
+                        if not self.LAST_BUY or\
+                            (self.LAST_SELL and self.LAST_BUY and rest_day > self.LAST_SELL - self.LAST_BUY):
+                            # BUY, BUY, BUY!!! (with all possible default parameters)
+                            self.log('BUY CREATE, %.2f' % self.dataclose[0])
+                            # Keep track of the created order to avoid a 2nd order
+                            p = cerebro.broker.getvalue()
+                            max_buy = p // self.dataclose[0]
+                            self.AMOUNT_ON_HAND = max_buy
+                            self.order = self.buy(None, max_buy)
+                            self.LAST_BUY = self.datas[0].datetime.date(0)
+        else:
+
+            if self.dataclose[0] < self.sma[0]:
+                # SELL, SELL, SELL!!! (with all possible default parameters)
+                self.log('SELL CREATE, %.2f' % self.dataclose[0])
+
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.close()
+                self.LAST_SELL = self.datas[0].datetime.date(0)
 
 THIS_STRA = SMAOp
 

@@ -23,9 +23,9 @@ def read_csv(file):
 
 def index():
     list = read_csv('stocks/list.csv')
-    from_date = datetime.datetime(2017, 1, 1)
+    from_date = datetime.datetime(2019, 1, 1)
     to_date = datetime.datetime.now()
-    # to_date = datetime.datetime(2020, 5, 1)
+    #to_date = datetime.datetime(2018, 1, 1)
     print(from_date)
     print(to_date)
     for stock in list:
