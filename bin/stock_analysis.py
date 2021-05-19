@@ -10,5 +10,5 @@ import sma_optimized
 import automatic
 
 def stock_analysis(stock, from_date, to_date):
-    #sma_optimized.stock_analysis(stock, from_date, to_date)
-    automatic.stock_analysis(stock, from_date, to_date)
+    sma_optimized.stock_analysis(stock, from_date, to_date)
+    #automatic.stock_analysis(stock, from_date, to_date)

@@ -16,7 +16,6 @@ class SMAOp(bt.Strategy):
 
     REST_DAYS = 0
     LAST_SELL = None
-    LAST_BUY = None
     AMOUNT_ON_HAND = 0
 
     def log(self, txt, dt=None):
@@ -32,6 +31,7 @@ class SMAOp(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
+        self.last_buy = None
 
         # Add a MovingAverageSimple indicator
         self.sma = bt.indicators.SimpleMovingAverage(
@@ -94,8 +94,7 @@ class SMAOp(bt.Strategy):
             return
 
         # Check if we are in the market
-        if not self.position:
-
+        if not self.AMOUNT_ON_HAND:
             # Not yet ... we MIGHT BUY if ...
             if self.dataclose[-2] > self.sma[-2]:
                 if self.dataclose[-1] > self.sma[-1]:
@@ -105,8 +104,8 @@ class SMAOp(bt.Strategy):
                         else:
                             rest_day = 0
 
-                        if not self.LAST_BUY or\
-                            (self.LAST_SELL and self.LAST_BUY and rest_day > self.LAST_SELL - self.LAST_BUY):
+                        if not self.last_buy or\
+                            (self.LAST_SELL and self.last_buy and rest_day > self.LAST_SELL - self.last_buy):
                             # BUY, BUY, BUY!!! (with all possible default parameters)
                             self.log('BUY CREATE, %.2f' % self.dataclose[0])
                             # Keep track of the created order to avoid a 2nd order
@@ -114,7 +113,7 @@ class SMAOp(bt.Strategy):
                             max_buy = p // self.dataclose[0]
                             self.AMOUNT_ON_HAND = max_buy
                             self.order = self.buy(None, max_buy)
-                            self.LAST_BUY = self.datas[0].datetime.date(0)
+                            self.last_buy = self.datas[0].datetime.date(0)
         else:
             if self.dataclose[0] < self.sma[0]:
                 # SELL, SELL, SELL!!! (with all possible default parameters)
@@ -125,15 +124,16 @@ class SMAOp(bt.Strategy):
                 self.AMOUNT_ON_HAND = 0
                 self.LAST_SELL = self.datas[0].datetime.date(0)
 
-THIS_STRA = SMAOp
+
 
 def stock_analysis(stock, from_date, to_date):
+    this_stra = SMAOp
     global cerebro
     # Create a cerebro entity
     cerebro = bt.Cerebro()
 
     # Add a strategy
-    cerebro.addstrategy(THIS_STRA)
+    cerebro.addstrategy(this_stra)
 
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
