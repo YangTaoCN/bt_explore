@@ -8,7 +8,9 @@ import sys  # To find out the script name (in argv[0])
 sys.path.append('strategies')
 import sma_optimized
 import automatic
+import dual_sma
 
 def stock_analysis(stock, from_date, to_date):
-    sma_optimized.stock_analysis(stock, from_date, to_date)
+    dual_sma.stock_analysis(stock, from_date, to_date)
+    #sma_optimized.stock_analysis(stock, from_date, to_date)
     #automatic.stock_analysis(stock, from_date, to_date)

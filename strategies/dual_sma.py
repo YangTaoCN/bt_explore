@@ -11,8 +11,9 @@ import backtrader as bt
 # Create a Stratey
 class SMAOp(bt.Strategy):
     params = (
-        ('maperiod', 23),
-        ('sell_ma_period', 13)
+        ('long_ma_period', 23),
+        ('short_ma_period', 13),
+        ('trend_ma_period', 37)
     )
 
     REST_DAYS = 0
@@ -35,11 +36,12 @@ class SMAOp(bt.Strategy):
         self.last_buy = None
 
         # Add a MovingAverageSimple indicator
-        self.sma = bt.indicators.SimpleMovingAverage(
-            self.datas[0], period=self.params.maperiod)
-        self.sma_sell = bt.indicators.SimpleMovingAverage(
-            self.datas[0], period=self.params.sell_ma_period)
-
+        self.sma_long = bt.indicators.SimpleMovingAverage(
+            self.datas[0], period=self.params.long_ma_period)
+        self.sma_short = bt.indicators.SimpleMovingAverage(
+            self.datas[0], period=self.params.short_ma_period)
+        self.sma_trend = bt.indicators.SimpleMovingAverage(
+            self.datas[0], period=self.params.trend_ma_period)
         # Indicators for the plotting show
         bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
         bt.indicators.WeightedMovingAverage(self.datas[0], period=25,
@@ -99,8 +101,7 @@ class SMAOp(bt.Strategy):
         # Check if we are in the market
         if not self.AMOUNT_ON_HAND:
             # Not yet ... we MIGHT BUY if ...
-            if self.dataclose[-2] > self.sma[-2] and self.dataclose[-1] > self.sma[-1]\
-                    and self.dataclose[0] > self.sma[0] > self.sma[-1] > self.sma[-2] > self.sma[-3]:
+            if self.sma_short[0] > self.sma_long[0] and self.sma_trend[-1] <= self.sma_trend[0]:
                 if self.LAST_SELL:
                     rest_day = self.datas[0].datetime.date(0) - self.LAST_SELL
                 else:
@@ -117,7 +118,7 @@ class SMAOp(bt.Strategy):
                     self.order = self.buy(None, max_buy)
                     self.last_buy = self.datas[0].datetime.date(0)
         else:
-            if self.dataclose[0] <= self.sma_sell[0]:
+            if self.sma_short[-1] >= self.sma_short[0]:
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
