@@ -8,6 +8,7 @@ import sys  # To find out the script name (in argv[0])
 # Import the backtrader platform
 import backtrader as bt
 
+
 # Create a Stratey
 class SMAOp(bt.Strategy):
     params = (
@@ -33,6 +34,8 @@ class SMAOp(bt.Strategy):
         self.buyprice = None
         self.buycomm = None
         self.last_buy = None
+        self.rest_day = 0
+        self.last_hold_day = 0
 
         # Add a MovingAverageSimple indicator
         self.sma = bt.indicators.SimpleMovingAverage(
@@ -98,25 +101,23 @@ class SMAOp(bt.Strategy):
 
         # Check if we are in the market
         if not self.AMOUNT_ON_HAND:
+            self.rest_day += 1
             # Not yet ... we MIGHT BUY if ...
-            if self.dataclose[-2] > self.sma[-2] and self.dataclose[-1] > self.sma[-1]\
+            if self.dataclose[-2] > self.sma[-2] and self.dataclose[-1] > self.sma[-1] \
                     and self.dataclose[0] > self.sma[0] > self.sma[-1] > self.sma[-2] > self.sma[-3]:
-                if self.LAST_SELL:
-                    rest_day = self.datas[0].datetime.date(0) - self.LAST_SELL
-                else:
-                    rest_day = 0
 
-                if not self.last_buy or\
-                    (self.LAST_SELL and self.last_buy and rest_day > self.LAST_SELL - self.last_buy):
-                    # BUY, BUY, BUY!!! (with all possible default parameters)
+                 if self.rest_day >= self.last_hold_day:
+                   # BUY, BUY, BUY!!! (with all possible default parameters)
                     self.log('BUY CREATE, %.2f' % self.dataclose[0])
                     # Keep track of the created order to avoid a 2nd order
                     p = cerebro.broker.getvalue()
-                    max_buy = (p -2000) // self.dataclose[0]
+                    max_buy = (p - 2000) // self.dataclose[0]
                     self.AMOUNT_ON_HAND = max_buy
                     self.order = self.buy(None, max_buy)
                     self.last_buy = self.datas[0].datetime.date(0)
+                    self.last_hold_day = 0
         else:
+            self.last_hold_day += 1
             if self.dataclose[0] <= self.sma_sell[0]:
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
@@ -125,7 +126,7 @@ class SMAOp(bt.Strategy):
                 self.order = self.close()
                 self.AMOUNT_ON_HAND = 0
                 self.LAST_SELL = self.datas[0].datetime.date(0)
-
+                self.rest_day = 0
 
 
 def stock_analysis(stock, from_date, to_date):
@@ -173,4 +174,3 @@ def stock_analysis(stock, from_date, to_date):
 
     # Plot the result
     cerebro.plot()
-

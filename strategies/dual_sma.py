@@ -101,14 +101,14 @@ class SMAOp(bt.Strategy):
         # Check if we are in the market
         if not self.AMOUNT_ON_HAND:
             # Not yet ... we MIGHT BUY if ...
-            if self.sma_short[0] > self.sma_long[0] and self.sma_trend[-1] <= self.sma_trend[0]:
+            if self.sma_short[0] > self.sma_short[-1] and self.sma_long[0] > self.sma_long[-1] and self.sma_trend[-1] < self.sma_trend[0]:
                 if self.LAST_SELL:
                     rest_day = self.datas[0].datetime.date(0) - self.LAST_SELL
                 else:
                     rest_day = 0
 
                 if not self.last_buy or\
-                    (self.LAST_SELL and self.last_buy and rest_day > self.LAST_SELL - self.last_buy):
+                    (self.LAST_SELL and self.last_buy and rest_day >= self.LAST_SELL - self.last_buy):
                     # BUY, BUY, BUY!!! (with all possible default parameters)
                     self.log('BUY CREATE, %.2f' % self.dataclose[0])
                     # Keep track of the created order to avoid a 2nd order
