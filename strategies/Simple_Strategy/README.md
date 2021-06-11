@@ -7,11 +7,11 @@
 
 # 数据
 arkk.json, qqq.json, spy.json
-simply_strategy.py，198行
+simply_strategy.py，192行
 
 # 运行
 在Terminal中，输入: python3 simply_strategy.py
 
 
 # 不同的波动率
-simply_strategy.py，199行中的2代表上涨2%就是大涨，下跌2%就是大跌
+simply_strategy.py，193行中的2代表上涨2%就是大涨，下跌2%就是大跌
